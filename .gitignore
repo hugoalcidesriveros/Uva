@@ -1,0 +1,7 @@
+# Archivos generados por PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# Configuracion local de Visual Studio Code
+.vscode/

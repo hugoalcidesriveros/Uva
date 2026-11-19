@@ -5,3 +5,14 @@
 
 # Configuracion local de Visual Studio Code
 .vscode/
+
+# Backend UVA - Node.js
+backend/node_modules/
+backend/dist/
+
+# Claves privadas y configuracion sensible
+backend/.env
+backend/.env.*
+
+# Permitir archivo de ejemplo
+!backend/.env.example

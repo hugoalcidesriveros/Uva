@@ -1,0 +1,244 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UVA - Asistente inteligente</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #17141c;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    .panel {
+      width: 90%;
+      max-width: 520px;
+      padding: 30px;
+      background: #29212e;
+      border-radius: 22px;
+      text-align: center;
+    }
+
+    h1 { color: #e1afd0; }
+
+    .ojos {
+      display: flex;
+      justify-content: center;
+      gap: 35px;
+      padding: 35px 0;
+      background: #080b13;
+      border-radius: 20px;
+      margin: 20px 0;
+    }
+
+    .ojo {
+      width: 32px;
+      height: 48px;
+      background: #65e4f3;
+      border-radius: 14px;
+    }
+
+    button {
+      padding: 13px 20px;
+      border: none;
+      border-radius: 12px;
+      background: #8e416d;
+      color: white;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      margin: 12px 0;
+    }
+
+    .respuesta {
+      text-align: left;
+      background: #18141e;
+      padding: 18px;
+      border-radius: 12px;
+      margin-top: 20px;
+      min-height: 90px;
+      line-height: 1.5;
+    }
+
+    #estado { color: #bcb3c3; }
+  </style>
+</head>
+
+<body>
+  <main class="panel">
+    <h1>🍇 Hola, soy UVA</h1>
+    <p>Tu pequeño asistente mendocino</p>
+
+    <div class="ojos">
+      <div class="ojo"></div>
+      <div class="ojo"></div>
+    </div>
+
+    <p id="estado">Listo para conversar</p>
+
+    <button id="hablar">🎤 Hablar con UVA</button>
+    <button id="detener">🔇 Silenciar voz</button>
+
+    <input
+      id="pregunta"
+      maxlength="500"
+      placeholder="O escribí tu pregunta..."
+    >
+
+    <button id="enviar">Enviar pregunta</button>
+
+    <div class="respuesta">
+      <strong>UVA responde:</strong>
+      <p id="respuesta">¡Buenas! ¿En qué te puedo ayudar?</p>
+    </div>
+  </main>
+
+  <script>
+    const estado = document.getElementById("estado");
+    const pregunta = document.getElementById("pregunta");
+    const respuesta = document.getElementById("respuesta");
+    const hablar = document.getElementById("hablar");
+    const enviar = document.getElementById("enviar");
+    const detener = document.getElementById("detener");
+
+    let procesando = false;
+
+    async function preguntarUVA(texto) {
+      if (procesando || !texto.trim()) return;
+
+      procesando = true;
+      hablar.disabled = true;
+      enviar.disabled = true;
+
+      estado.textContent = "UVA está pensando...";
+      respuesta.textContent = "Consultando inteligencia artificial...";
+
+      try {
+        const solicitud = await fetch("/preguntar", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            pregunta: texto.trim()
+          })
+        });
+
+        const datos = await solicitud.json();
+
+        if (!solicitud.ok) {
+          throw new Error(datos.error || "Error del servidor");
+        }
+
+        respuesta.textContent = datos.respuesta;
+        estado.textContent = "UVA está hablando...";
+
+        // Reproducir la respuesta utilizando la voz de Chrome
+        speechSynthesis.cancel();
+
+        const voz = new SpeechSynthesisUtterance(datos.respuesta);
+        voz.lang = "es-AR";
+        voz.rate = 1;
+
+        voz.onend = () => {
+          estado.textContent = "Listo para conversar";
+        };
+
+        voz.onerror = () => {
+          estado.textContent = "Respuesta recibida sin audio";
+        };
+
+        speechSynthesis.speak(voz);
+
+      } catch (error) {
+        respuesta.textContent = error.message;
+        estado.textContent = "Ocurrió un error";
+      } finally {
+        procesando = false;
+        hablar.disabled = !reconocimiento;
+        enviar.disabled = false;
+      }
+    }
+
+    // Reconocimiento de voz del navegador
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+    let reconocimiento = null;
+
+    if (SpeechRecognition) {
+      reconocimiento = new SpeechRecognition();
+      reconocimiento.lang = "es-AR";
+      reconocimiento.continuous = false;
+      reconocimiento.interimResults = false;
+
+      reconocimiento.onstart = () => {
+        estado.textContent = "UVA está escuchando...";
+        hablar.disabled = true;
+      };
+
+      reconocimiento.onresult = (evento) => {
+        const texto = evento.results[0][0].transcript;
+        pregunta.value = texto;
+        preguntarUVA(texto);
+      };
+
+      reconocimiento.onerror = (evento) => {
+        estado.textContent =
+          "Error de micrófono: " + evento.error;
+      };
+
+      reconocimiento.onend = () => {
+        if (!procesando) hablar.disabled = false;
+      };
+
+    } else {
+      hablar.disabled = true;
+      estado.textContent =
+        "Reconocimiento no disponible. Podés escribir.";
+    }
+
+    hablar.onclick = () => {
+      speechSynthesis.cancel();
+      if (reconocimiento && !procesando) {
+        reconocimiento.start();
+      }
+    };
+
+    enviar.onclick = () => preguntarUVA(pregunta.value);
+
+    pregunta.addEventListener("keydown", (evento) => {
+      if (evento.key === "Enter") {
+        preguntarUVA(pregunta.value);
+      }
+    });
+
+    detener.onclick = () => {
+      speechSynthesis.cancel();
+      estado.textContent = "Voz detenida";
+    };
+  </script>
+</body>
+</html>

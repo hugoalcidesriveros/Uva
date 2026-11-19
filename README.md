@@ -11,7 +11,15 @@ Un pequeño robot de escritorio que combina electrónica,
 software e inteligencia artificial con la identidad
 vitivinícola de Mendoza, Argentina.
 
-![UVA - Diseño conceptual](Robot%20uva%20de%20escritorio%20adorable.png)
+
+<p align="center">
+  <img
+    src="Robot%20uva%20de%20escritorio%20adorable.png"
+    alt="UVA - Robot inteligente de escritorio"
+    width="300"
+  />
+</p>
+
 
 ![Estado](https://img.shields.io/badge/Estado-En_desarrollo-F59E0B?style=for-the-badge)
 ![ESP32](https://img.shields.io/badge/ESP32-Embedded-323232?style=for-the-badge&logo=espressif&logoColor=white)
@@ -156,7 +164,15 @@ El diseño busca combinar una apariencia amigable con una estructura que pueda f
 
 ### Diseño conceptual
 
-![Diseño conceptual UVA](Robot%20uva%20de%20escritorio%20adorable.png)
+
+<p align="center">
+  <img
+    src="Robot%20uva%20de%20escritorio%20adorable.png"
+    alt="UVA - Robot inteligente de escritorio"
+    width="300"
+  />
+</p>
+
 
 *Representación visual del diseño objetivo. No corresponde a una fotografía de un prototipo terminado.*
 
